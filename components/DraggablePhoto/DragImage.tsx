@@ -17,7 +17,7 @@ const DragImageBase = styled(motion.div)<{
   border: 4px solid white;
 
   position: fixed;
-  top: ${(props) => props.$top ?? -1000}px;
+  top: ${(props) => props.$top ?? -DRAG_IMAGE_SIZE + 1}px;
   left: ${(props) => props.$left ?? 0}px;
   pointer-events: none;
 
@@ -38,7 +38,11 @@ interface DragImageProps {
 const DragImage = React.forwardRef<HTMLDivElement, DragImageProps>(
   ({ imageUrl, animation }, ref) => {
     if (!animation) {
-      return <DragImageBase ref={ref} $imageUrl={imageUrl} />;
+      return (
+        <>
+          <DragImageBase ref={ref} $imageUrl={imageUrl} />;
+        </>
+      );
     }
 
     switch (animation.type) {
