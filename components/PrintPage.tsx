@@ -170,6 +170,7 @@ const PrintPage: React.FC<PrintPageProps> = ({ initialEntries }) => {
                             setSwappingState(undefined);
                           }, SWAP_ANIMATION_DURATION * 1000);
                         }}
+                        draggable={!swappingState}
                       />
                     </PrintPhoto>
                   );

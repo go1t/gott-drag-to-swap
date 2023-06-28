@@ -68,6 +68,7 @@ interface SwappablePhotoProps {
   }) => void;
   width: number;
   height: number;
+  draggable: boolean;
 }
 
 const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
@@ -75,6 +76,7 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
   onDrop,
   width,
   height,
+  draggable,
 }) => {
   const [dragInitialPosition, setDragInitialPosition] = React.useState<{
     offsetLeft: number;
@@ -151,7 +153,7 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
           ? imageState.imageUrl
           : imageState.originalImageUrl
       }
-      draggable={imageState.state === "default"}
+      draggable={draggable}
       // TODO: replace with long press handler
       onMouseDown={onLongPress}
       onDragStart={onDragStart}
