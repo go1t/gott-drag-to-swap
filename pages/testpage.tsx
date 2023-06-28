@@ -1,5 +1,5 @@
 import Head from "next/head";
-import PrintPage from "../components/printPage";
+import PrintPage from "../components/PrintPage";
 import styled from "styled-components";
 
 const PageHeader = styled.div`
@@ -37,7 +37,7 @@ export default function Testpage() {
         <p>Hardback Photobook last edited on Thursday 13 April 2022 at 16:28</p>
       </PageHeader>
       <PrintPage
-        data={[
+        entries={[
           {
             title: "Front Print",
             images: [

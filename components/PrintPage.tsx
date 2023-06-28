@@ -1,5 +1,6 @@
+import * as React from "react";
 import styled from "styled-components";
-import Actions from "./actions";
+import Actions from "./Actions";
 
 const Wrapper = styled.div`
   width: 600px;
@@ -40,11 +41,20 @@ const PrintPhoto = styled.div`
   }
 `;
 
-export default function PrintPage({ data }) {
+interface Entry {
+  title: string;
+  images: string[];
+}
+
+interface PrintPageProps {
+  entries: Entry[];
+}
+
+const PrintPage: React.FC<PrintPageProps> = ({ entries }) => {
   return (
     <>
       <Wrapper>
-        {Object.values(data).map((entry, i) => {
+        {entries.map((entry, i) => {
           return (
             <PrintWrapper key={i}>
               <Header>
@@ -66,4 +76,6 @@ export default function PrintPage({ data }) {
       </Wrapper>
     </>
   );
-}
+};
+
+export default PrintPage;

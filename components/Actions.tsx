@@ -20,7 +20,9 @@ const ButtonLayout = styled(Icon)``;
 
 const ButtonMenu = styled(Icon)``;
 
-export default function Actions({ data }) {
+interface ActionsProps {}
+
+const Actions: React.FC<ActionsProps> = () => {
   return (
     <>
       <StyledActions>
@@ -59,4 +61,6 @@ export default function Actions({ data }) {
       </StyledActions>
     </>
   );
-}
+};
+
+export default Actions;
