@@ -79,12 +79,14 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
   const [dragInitialPosition, setDragInitialPosition] = React.useState<{
     offsetLeft: number;
     offsetTop: number;
-    clientX: number;
-    clientY: number;
+    pageX: number;
+    pageY: number;
     rippleDiameter: number;
   }>();
   const [hasDragStart, setHasDragStart] = React.useState(false);
   const [hasDragEnter, setHasDragEnter] = React.useState(false);
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   // this ref is here so we can grab the drag image element to be used
   // for data transfer's drag image
@@ -99,8 +101,8 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
     const element = e.currentTarget;
     const diameter = Math.max(element.clientWidth, element.clientHeight);
     setDragInitialPosition({
-      clientX: e.clientX,
-      clientY: e.clientY,
+      pageX: e.pageX,
+      pageY: e.pageY,
       offsetLeft: element.offsetLeft,
       offsetTop: element.offsetTop,
       rippleDiameter: diameter,
@@ -134,13 +136,14 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
     if (newReplacement === imageState.imageUrl) return;
     onDrop({
       imageUrl: newReplacement,
-      dropX: e.clientX - e.currentTarget.offsetLeft,
-      dropY: e.clientY - e.currentTarget.offsetTop,
+      dropX: e.pageX - containerRef.current.offsetLeft,
+      dropY: e.pageY - containerRef.current.offsetTop,
     });
   };
 
   return (
     <Container
+      ref={containerRef}
       width={width}
       height={height}
       imageUrl={
@@ -193,8 +196,14 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
                   animation={{
                     type: "scale-up",
                     initialPosition: {
-                      top: dragInitialPosition.clientY - DRAG_IMAGE_SIZE / 2,
-                      left: dragInitialPosition.clientX - DRAG_IMAGE_SIZE / 2,
+                      top:
+                        dragInitialPosition.pageY -
+                        dragInitialPosition.offsetTop -
+                        DRAG_IMAGE_SIZE / 2,
+                      left:
+                        dragInitialPosition.pageX -
+                        dragInitialPosition.offsetLeft -
+                        DRAG_IMAGE_SIZE / 2,
                     },
                   }}
                 />
@@ -206,11 +215,11 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
               <Ripple
                 style={{
                   top:
-                    dragInitialPosition.clientY -
+                    dragInitialPosition.pageY -
                     dragInitialPosition.offsetTop -
                     dragInitialPosition.rippleDiameter / 2,
                   left:
-                    dragInitialPosition.clientX -
+                    dragInitialPosition.pageX -
                     dragInitialPosition.offsetLeft -
                     dragInitialPosition.rippleDiameter / 2,
                   width: `${dragInitialPosition.rippleDiameter}px`,

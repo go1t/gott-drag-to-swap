@@ -49,6 +49,7 @@ const DragImage = React.forwardRef<HTMLDivElement, DragImageProps>(
             $imageUrl={imageUrl}
             $top={animation.initialPosition.top}
             $left={animation.initialPosition.left}
+            style={{ position: "absolute" }}
             initial={{ scale: 0 }}
             animate={{
               scale: 1,
