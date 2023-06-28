@@ -1,10 +1,10 @@
 import styled from "styled-components";
-import { CIRCLE_WIDTH, SWAP_ANIMATION_DURATION } from "./constants";
+import { DRAG_IMAGE_SIZE, SWAP_ANIMATION_DURATION } from "./constants";
 import { motion } from "framer-motion";
 
 const ClipCircle = styled(motion.div)`
-  width: ${CIRCLE_WIDTH}px;
-  height: ${CIRCLE_WIDTH}px;
+  width: ${DRAG_IMAGE_SIZE}px;
+  height: ${DRAG_IMAGE_SIZE}px;
   border-radius: 50%;
   border: 4px solid white;
   position: absolute;
@@ -40,12 +40,12 @@ const Replacement: React.FC<{
   return (
     <ClipCircle
       initial={{
-        width: CIRCLE_WIDTH,
-        height: CIRCLE_WIDTH,
+        width: DRAG_IMAGE_SIZE,
+        height: DRAG_IMAGE_SIZE,
         top: height / 2,
         left: width / 2,
-        x: -CIRCLE_WIDTH / 2,
-        y: -CIRCLE_WIDTH / 2,
+        x: -DRAG_IMAGE_SIZE / 2,
+        y: -DRAG_IMAGE_SIZE / 2,
       }}
       animate={{
         width: diameter,

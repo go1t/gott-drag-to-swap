@@ -1,8 +1,9 @@
 import * as React from "react";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "framer-motion";
-import { CIRCLE_WIDTH } from "./constants";
+import { DRAG_IMAGE_SIZE } from "./constants";
 import Replacement, { MOVE_CIRCLE_TO_CENTER_DELAY } from "./Replacement";
+import DragImage from "./DragImage";
 
 const Ripple = styled(motion.div)`
   position: absolute;
@@ -14,27 +15,13 @@ const Ripple = styled(motion.div)`
 `;
 
 const Overlay = styled(motion.div)`
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.5);
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 999;
-  pointer-events: none;
-`;
-
-const DragImage = styled(motion.div)`
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  width: ${CIRCLE_WIDTH}px;
-  height: ${CIRCLE_WIDTH}px;
-  border-radius: 999px;
-  border: 4px solid white;
-
-  position: fixed;
-  top: -1000px;
   pointer-events: none;
 `;
 
@@ -73,7 +60,7 @@ const SwappablePhoto: React.FC<SwappablePhotoProps> = ({
   width,
   height,
 }) => {
-  const [dragPosition, setDragPosition] = React.useState<{
+  const [dragInitialPosition, setDragInitialPosition] = React.useState<{
     x: number;
     y: number;
     rippleDiameter: number;
@@ -114,14 +101,14 @@ const SwappablePhoto: React.FC<SwappablePhotoProps> = ({
         backgroundRepeat: "no-repeat",
       }}
       draggable={imageState.state === "default"}
-      // TODO: replace with long press
+      // TODO: replace with long press handler
       onMouseDown={(e) => {
         if (e.button !== 0) {
           return;
         }
         const source = e.currentTarget;
         const diameter = Math.max(source.clientWidth, source.clientHeight);
-        setDragPosition({
+        setDragInitialPosition({
           x: e.clientX - source.offsetLeft - diameter / 2,
           y: e.clientY - source.offsetTop - diameter / 2,
           clientX: e.clientX,
@@ -138,13 +125,14 @@ const SwappablePhoto: React.FC<SwappablePhotoProps> = ({
         if (dragImageRef.current) {
           e.dataTransfer.setDragImage(
             dragImageRef.current,
-            CIRCLE_WIDTH / 2,
-            CIRCLE_WIDTH / 2
+            DRAG_IMAGE_SIZE / 2,
+            DRAG_IMAGE_SIZE / 2
           );
         }
         e.dataTransfer.setData("text", imageState.imageUrl);
       }}
-      onDragEnter={() => {
+      onDragEnter={(e) => {
+        e.preventDefault();
         setIsDragEnter(true);
       }}
       onDragLeave={() => {
@@ -154,19 +142,19 @@ const SwappablePhoto: React.FC<SwappablePhotoProps> = ({
       onDrop={onImageDrop}
       onDragEnd={(e) => {
         setHasDragStart(false);
-        setDragPosition(undefined);
+        setDragInitialPosition(undefined);
         setIsDragEnter(false);
       }}
       onDragExit={() => {
         setHasDragStart(false);
-        setDragPosition(undefined);
+        setDragInitialPosition(undefined);
         setIsDragEnter(false);
       }}
       onMouseUp={(e) => {
         if (dragImageRef.current) {
           dragImageRef.current.style.top = `-1000px`;
         }
-        setDragPosition(undefined);
+        setDragInitialPosition(undefined);
       }}
     >
       {imageState.state === "replacing-ripple" && (
@@ -183,32 +171,23 @@ const SwappablePhoto: React.FC<SwappablePhotoProps> = ({
               height={height}
             />
           </motion.div>
-          <DragImage
-            style={{
-              position: "absolute",
-              backgroundImage: `url('${imageState.replacementImageUrl}')`,
-              top: `${imageState.dropY - CIRCLE_WIDTH / 2}px`,
-              left: `${imageState.dropX - CIRCLE_WIDTH / 2}px`,
-              display: hasDragStart ? "none" : undefined,
-              width: CIRCLE_WIDTH,
-              height: CIRCLE_WIDTH,
-              borderWidth: 4,
-            }}
-            initial={{
-              top: `${imageState.dropY - CIRCLE_WIDTH / 2}px`,
-              left: `${imageState.dropX - CIRCLE_WIDTH / 2}px`,
-            }}
-            animate={{
-              top: `calc(50% - ${CIRCLE_WIDTH / 2}px)`,
-              left: `calc(50% - ${CIRCLE_WIDTH / 2}px)`,
-            }}
-            transition={{ duration: 0.15 }}
-          />
+          {!hasDragStart && (
+            <DragImage
+              imageUrl={imageState.replacementImageUrl}
+              animation={{
+                type: "move-to-center",
+                initialPosition: {
+                  top: imageState.dropY - DRAG_IMAGE_SIZE / 2,
+                  left: imageState.dropX - DRAG_IMAGE_SIZE / 2,
+                },
+              }}
+            />
+          )}
         </>
       )}
 
       <AnimatePresence>
-        {isDragEnter && !dragPosition && (
+        {isDragEnter && !dragInitialPosition && (
           <Overlay
             initial={{ opacity: 0 }}
             animate={{
@@ -222,45 +201,37 @@ const SwappablePhoto: React.FC<SwappablePhotoProps> = ({
           />
         )}
       </AnimatePresence>
+
       {imageState.state === "default" && (
         // TODO: maybe this could be its own component?
         <>
           {/* This version will be used as drag image */}
-          <DragImage
-            ref={dragImageRef}
-            style={{ backgroundImage: `url('${imageState.imageUrl}')` }}
-          />
+          <DragImage imageUrl={imageState.imageUrl} ref={dragImageRef} />
           {/* This will show up upon clicked */}
+          {!hasDragStart && (
+            <AnimatePresence>
+              {dragInitialPosition && (
+                <DragImage
+                  imageUrl={imageState.imageUrl}
+                  animation={{
+                    type: "scale-up",
+                    initialPosition: {
+                      top: dragInitialPosition.clientY - DRAG_IMAGE_SIZE / 2,
+                      left: dragInitialPosition.clientX - DRAG_IMAGE_SIZE / 2,
+                    },
+                  }}
+                />
+              )}
+            </AnimatePresence>
+          )}
           <AnimatePresence>
-            {dragPosition && (
-              <DragImage
-                style={{
-                  backgroundImage: `url('${imageState.imageUrl}')`,
-                  top: `${dragPosition.clientY - 30}px`,
-                  left: `${dragPosition.clientX - 30}px`,
-                  display: hasDragStart ? "none" : undefined,
-                  zIndex: 999,
-                }}
-                initial={{ scale: 0 }}
-                animate={{
-                  scale: 1,
-                  transition: { duration: 0.2, ease: "easeInOut" },
-                }}
-                exit={{
-                  scale: 0,
-                  transition: { duration: 0.2, ease: "easeInOut" },
-                }}
-              />
-            )}
-          </AnimatePresence>
-          <AnimatePresence>
-            {dragPosition && (
+            {dragInitialPosition && (
               <Ripple
                 style={{
-                  top: dragPosition.y,
-                  left: dragPosition.x,
-                  width: `${dragPosition.rippleDiameter}px`,
-                  height: `${dragPosition.rippleDiameter}px`,
+                  top: dragInitialPosition.y,
+                  left: dragInitialPosition.x,
+                  width: `${dragInitialPosition.rippleDiameter}px`,
+                  height: `${dragInitialPosition.rippleDiameter}px`,
                 }}
                 initial={{ opacity: 1, scale: 0 }}
                 animate={{
@@ -270,7 +241,6 @@ const SwappablePhoto: React.FC<SwappablePhotoProps> = ({
                 }}
                 exit={{
                   opacity: 0,
-                  scale: 4,
                   transition: { duration: 0.1, ease: "easeInOut" },
                 }}
               />
