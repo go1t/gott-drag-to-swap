@@ -51,11 +51,15 @@ const PhotoWithRippleInAnimation: React.FC<{
         width: diameter,
         height: diameter,
         // This adjustment is to ensure that the image stays in place when the
-        // circle scales up
+        // circle scales up.
         top: (-diameter * Math.max(width / height, 1)) / 6,
         left: (-diameter * Math.max(height / width, 1)) / 6,
+        // HACK: Ideally this should be 0,0 but the photo is a bit offset and I didn't
+        // have the time to figure out yet why that is. This offset will likely need to be different
+        // for different width&height combination too.
+        // I have a feeling that we should be able to derive this offset based on the width & height
+        // but the time is short, so I havne't got to it yet.
         x: 0,
-        // TODO: figure out why this offset is necessary
         y: -6,
       }}
       transition={transition}
