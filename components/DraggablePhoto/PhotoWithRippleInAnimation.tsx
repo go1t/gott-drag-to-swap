@@ -31,7 +31,7 @@ const PhotoWithRippleInAnimation: React.FC<{
   width: number;
   height: number;
 }> = ({ imageUrl, width, height }) => {
-  const diameter = Math.max(width, height) * 1.5;
+  const diameter = Math.sqrt(width * width + height * height) + 8; // this +8 is to compensate for 4px border
 
   const transition = {
     duration: SWAP_ANIMATION_DURATION - MOVE_CIRCLE_TO_CENTER_DELAY,
@@ -52,15 +52,10 @@ const PhotoWithRippleInAnimation: React.FC<{
         height: diameter,
         // This adjustment is to ensure that the image stays in place when the
         // circle scales up.
-        top: (-diameter * Math.max(width / height, 1)) / 6,
-        left: (-diameter * Math.max(height / width, 1)) / 6,
-        // HACK: Ideally this should be 0,0 but the photo is a bit offset and I didn't
-        // have the time to figure out yet why that is. This offset will likely need to be different
-        // for different width&height combination too.
-        // I have a feeling that we should be able to derive this offset based on the width & height
-        // but the time is short, so I havne't got to it yet.
+        top: -(diameter - height) / 2,
+        left: -(diameter - width) / 2,
         x: 0,
-        y: -6,
+        y: 0,
       }}
       transition={transition}
     >

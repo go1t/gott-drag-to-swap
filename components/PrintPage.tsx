@@ -141,11 +141,6 @@ const PrintPage: React.FC<PrintPageProps> = ({ initialEntries }) => {
                     <PrintPhoto key={image}>
                       <DraggablePhoto
                         imageState={getImageState(image, swappingState)}
-                        // NOTE: there's an image offset hack in the `PhotoWithRippleInAnimation` that
-                        // is hardcoded to work with this width & height value. I haven't gone and fixed
-                        // it yet as the time is limited, so if the width and height here is changed from this, the ripple
-                        // animation might look a bit janky.
-                        // Ideally, the custom offset should be derivable from width & height but the exact formula eludes me for the time being :(
                         width={270}
                         height={151}
                         onDrop={(dropInfo) => {
