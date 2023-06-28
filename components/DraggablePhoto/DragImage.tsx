@@ -83,4 +83,6 @@ const DragImage = React.forwardRef<HTMLDivElement, DragImageProps>(
   }
 );
 
+DragImage.displayName = "DragImage";
+
 export default DragImage;
