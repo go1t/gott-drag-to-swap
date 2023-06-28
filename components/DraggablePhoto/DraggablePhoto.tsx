@@ -143,6 +143,12 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
     });
   };
 
+  // clear the drag position whenever we got a new image state so that
+  // we don't have any lingering drag state
+  React.useEffect(() => {
+    setDragInitialPosition(undefined);
+  }, [imageState]);
+
   return (
     <Container
       ref={containerRef}
