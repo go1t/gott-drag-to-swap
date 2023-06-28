@@ -79,7 +79,6 @@ const DragImage = React.forwardRef<HTMLDivElement, DragImageProps>(
           />
         );
     }
-    return null;
   }
 );
 

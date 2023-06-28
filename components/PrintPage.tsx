@@ -1,9 +1,9 @@
 import * as React from "react";
 import styled from "styled-components";
 import Actions from "./Actions";
-import SwappablePhoto, { ImageState } from "./SwappablePhoto/SwappablePhoto";
+import DraggablePhoto, { ImageState } from "./DraggablePhoto/DraggablePhoto";
 import { cloneDeep } from "lodash";
-import { SWAP_ANIMATION_DURATION } from "./SwappablePhoto/constants";
+import { SWAP_ANIMATION_DURATION } from "./DraggablePhoto/constants";
 
 const Wrapper = styled.div`
   width: 600px;
@@ -49,6 +49,13 @@ interface PrintPageProps {
   initialEntries: Entry[];
 }
 
+interface SwappingState {
+  originalImageUrl: string;
+  replacementImageUrl: string;
+  dropX: number;
+  dropY: number;
+}
+
 // assuming that photo urls are unique!
 const swapImages = (
   entries: Entry[],
@@ -82,13 +89,6 @@ const swapImages = (
 
   return newEntries;
 };
-
-interface SwappingState {
-  originalImageUrl: string;
-  replacementImageUrl: string;
-  dropX: number;
-  dropY: number;
-}
 
 const getImageState = (
   imageUrl: string,
@@ -139,11 +139,12 @@ const PrintPage: React.FC<PrintPageProps> = ({ initialEntries }) => {
                 {entry.images.map((image) => {
                   return (
                     <PrintPhoto key={image}>
-                      <SwappablePhoto
+                      <DraggablePhoto
                         imageState={getImageState(image, swappingState)}
                         width={270}
                         height={151}
                         onDrop={(dropInfo) => {
+                          // set the swapping state to trigger the animation
                           setSwappingState({
                             originalImageUrl: image,
                             replacementImageUrl: dropInfo.imageUrl,
@@ -151,6 +152,12 @@ const PrintPage: React.FC<PrintPageProps> = ({ initialEntries }) => {
                             dropY: dropInfo.dropY,
                           });
 
+                          // after the animation is done, replace the image in the actual
+                          // entries and clear the transition state.
+                          // Assumption: the swap animation duration is fast enough that
+                          // it's not possible to kick-off another swap during the transition.
+                          // If this is not an acceptable requirement, we could maintain an array
+                          // of swapping state too.
                           setTimeout(() => {
                             setEntries(
                               swapImages(entries, image, dropInfo.imageUrl)

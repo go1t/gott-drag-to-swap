@@ -26,7 +26,7 @@ const Image = styled.div<{ width: number; height: number; imageUrl: string }>`
 
 export const MOVE_CIRCLE_TO_CENTER_DELAY = 0.15;
 
-const Replacement: React.FC<{
+const PhotoWithRippleInAnimation: React.FC<{
   imageUrl: string;
   width: number;
   height: number;
@@ -50,6 +50,8 @@ const Replacement: React.FC<{
       animate={{
         width: diameter,
         height: diameter,
+        // This adjustment is to ensure that the image stays in place when the
+        // circle scales up
         top: (-diameter * Math.max(width / height, 1)) / 6,
         left: (-diameter * Math.max(height / width, 1)) / 6,
         x: 0,
@@ -63,4 +65,4 @@ const Replacement: React.FC<{
   );
 };
 
-export default Replacement;
+export default PhotoWithRippleInAnimation;
