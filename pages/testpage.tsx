@@ -37,7 +37,7 @@ export default function Testpage() {
         <p>Hardback Photobook last edited on Thursday 13 April 2022 at 16:28</p>
       </PageHeader>
       <PrintPage
-        entries={[
+        initialEntries={[
           {
             title: "Front Print",
             images: [

@@ -1,6 +1,9 @@
 import * as React from "react";
 import styled from "styled-components";
 import Actions from "./Actions";
+import SwappablePhoto, { ImageState } from "./SwappablePhoto/SwappablePhoto";
+import { cloneDeep } from "lodash";
+import { SWAP_ANIMATION_DURATION } from "./SwappablePhoto/constants";
 
 const Wrapper = styled.div`
   width: 600px;
@@ -35,10 +38,6 @@ const PageLayout = styled.div`
 
 const PrintPhoto = styled.div`
   width: calc(50% - 10px);
-
-  img {
-    max-width: 100%;
-  }
 `;
 
 interface Entry {
@@ -47,10 +46,85 @@ interface Entry {
 }
 
 interface PrintPageProps {
-  entries: Entry[];
+  initialEntries: Entry[];
 }
 
-const PrintPage: React.FC<PrintPageProps> = ({ entries }) => {
+// assuming that photo urls are unique!
+const swapImages = (
+  entries: Entry[],
+  originalImageUrl: string,
+  replacingImageUrl: string
+) => {
+  const newEntries = cloneDeep(entries);
+
+  // find entries for each image first
+  const originalEntryIdx = entries.findIndex(
+    (entry) => entry.images.indexOf(originalImageUrl) >= 0
+  );
+  const originalImageIdx = entries.reduce(
+    (idx, entry) => Math.max(entry.images.indexOf(originalImageUrl), idx),
+    -1
+  );
+  const replacingEntryIdx = entries.findIndex(
+    (entry) => entry.images.indexOf(replacingImageUrl) >= 0
+  );
+  const replacingImageIdx = entries.reduce(
+    (idx, entry) => Math.max(entry.images.indexOf(replacingImageUrl), idx),
+    -1
+  );
+
+  if (originalEntryIdx < 0 || originalEntryIdx < 0) {
+    throw new Error("Unexpected original between images outside entries");
+  }
+
+  newEntries[originalEntryIdx].images[originalImageIdx] = replacingImageUrl;
+  newEntries[replacingEntryIdx].images[replacingImageIdx] = originalImageUrl;
+
+  return newEntries;
+};
+
+interface SwappingState {
+  originalImageUrl: string;
+  replacementImageUrl: string;
+  dropX: number;
+  dropY: number;
+}
+
+const getImageState = (
+  imageUrl: string,
+  swappingState: SwappingState | undefined
+): ImageState => {
+  // if this image is being dropped on, show the ripple animation
+  if (imageUrl === swappingState?.originalImageUrl) {
+    return {
+      state: "replacing-ripple",
+      originalImageUrl: imageUrl,
+      replacementImageUrl: swappingState.replacementImageUrl,
+      dropX: swappingState.dropX,
+      dropY: swappingState.dropY,
+    };
+  }
+
+  // if this image is not being dropped on but is the one being swapped, we need to fade the swapping image in
+  if (imageUrl === swappingState?.replacementImageUrl) {
+    return {
+      state: "replacing-fade",
+      originalImageUrl: swappingState.replacementImageUrl,
+      replacementImageUrl: swappingState.originalImageUrl,
+    };
+  }
+
+  return {
+    state: "default",
+    imageUrl,
+  };
+};
+
+const PrintPage: React.FC<PrintPageProps> = ({ initialEntries }) => {
+  const [entries, setEntries] = React.useState(initialEntries);
+
+  const [swappingState, setSwappingState] = React.useState<SwappingState>();
+
   return (
     <>
       <Wrapper>
@@ -65,7 +139,26 @@ const PrintPage: React.FC<PrintPageProps> = ({ entries }) => {
                 {entry.images.map((image) => {
                   return (
                     <PrintPhoto key={image}>
-                      <img src={image} alt="" />
+                      <SwappablePhoto
+                        imageState={getImageState(image, swappingState)}
+                        width={270}
+                        height={151}
+                        onDrop={(dropInfo) => {
+                          setSwappingState({
+                            originalImageUrl: image,
+                            replacementImageUrl: dropInfo.imageUrl,
+                            dropX: dropInfo.dropX,
+                            dropY: dropInfo.dropY,
+                          });
+
+                          setTimeout(() => {
+                            setEntries(
+                              swapImages(entries, image, dropInfo.imageUrl)
+                            );
+                            setSwappingState(undefined);
+                          }, SWAP_ANIMATION_DURATION * 1000);
+                        }}
+                      />
                     </PrintPhoto>
                   );
                 })}
