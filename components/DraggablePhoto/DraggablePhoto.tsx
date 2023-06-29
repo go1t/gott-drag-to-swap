@@ -151,198 +151,196 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
   }, [imageState]);
 
   return (
-    <Container
-      ref={containerRef}
-      width={width}
-      height={height}
-      imageUrl={
-        imageState.state === "default"
-          ? imageState.imageUrl
-          : imageState.originalImageUrl
-      }
-      draggable={draggable}
-      // TODO: replace with long press handler
-      onPointerDown={onLongPress}
-      onDragStart={onDragStart}
-      onDragEnter={(e) => {
-        e.preventDefault();
-        setHasDragEnter(true);
-      }}
-      onDragLeave={() => setHasDragEnter(false)}
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={onImageDrop}
-      onDragEnd={() => {
-        setHasDragStart(false);
-        setDragInitialPosition(undefined);
-        setHasDragEnter(false);
-      }}
-      onDragExit={() => {
-        setHasDragStart(false);
-        setDragInitialPosition(undefined);
-        setHasDragEnter(false);
-      }}
-      onMouseUp={() => setDragInitialPosition(undefined)}
-    >
-      {/**
-       * ======= DRAG-START ANIMATION =======
-       * This consists of three separate parts:
-       * - drag image
-       * - drag image on initial long press
-       * - ripple animation
-       */}
-      {imageState.state === "default" && (
-        // TODO: maybe this could be its own component?
-        <>
-          {/* This version will be used as drag image */}
-          <DragImage imageUrl={imageState.imageUrl} ref={dragImageRef} />
-
-          {/* This will show up upon clicked */}
-          {!hasDragStart && (
+    <>
+      <Container
+        ref={containerRef}
+        width={width}
+        height={height}
+        imageUrl={
+          imageState.state === "default"
+            ? imageState.imageUrl
+            : imageState.originalImageUrl
+        }
+        draggable={draggable}
+        // TODO: replace with long press handler
+        onPointerDown={onLongPress}
+        onDragStart={onDragStart}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setHasDragEnter(true);
+        }}
+        onDragLeave={() => setHasDragEnter(false)}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={onImageDrop}
+        onDragEnd={() => {
+          setHasDragStart(false);
+          setDragInitialPosition(undefined);
+          setHasDragEnter(false);
+        }}
+        onDragExit={() => {
+          setHasDragStart(false);
+          setDragInitialPosition(undefined);
+          setHasDragEnter(false);
+        }}
+        onMouseUp={() => setDragInitialPosition(undefined)}
+      >
+        {/**
+         * ======= DRAG-START ANIMATION =======
+         * This consists of three separate parts:
+         * - drag image
+         * - drag image on initial long press
+         * - ripple animation
+         */}
+        {imageState.state === "default" && (
+          // TODO: maybe this could be its own component?
+          <>
+            {/* This version will be used as drag image */}
+            <DragImage imageUrl={imageState.imageUrl} ref={dragImageRef} />
             <AnimatePresence>
               {dragInitialPosition && (
-                <DragImage
-                  imageUrl={imageState.imageUrl}
-                  animation={{
-                    type: "scale-up",
-                    initialPosition: {
-                      top:
-                        dragInitialPosition.pageY -
-                        dragInitialPosition.offsetTop -
-                        DRAG_IMAGE_SIZE / 2,
-                      left:
-                        dragInitialPosition.pageX -
-                        dragInitialPosition.offsetLeft -
-                        DRAG_IMAGE_SIZE / 2,
-                    },
+                <Ripple
+                  style={{
+                    top:
+                      dragInitialPosition.pageY -
+                      dragInitialPosition.offsetTop -
+                      dragInitialPosition.rippleDiameter / 2,
+                    left:
+                      dragInitialPosition.pageX -
+                      dragInitialPosition.offsetLeft -
+                      dragInitialPosition.rippleDiameter / 2,
+                    width: `${dragInitialPosition.rippleDiameter}px`,
+                    height: `${dragInitialPosition.rippleDiameter}px`,
+                  }}
+                  initial={{ opacity: 1, scale: 0 }}
+                  animate={{
+                    opacity: 0.5,
+                    scale: 4,
+                    transition: { duration: 0.15, ease: "easeInOut" },
+                  }}
+                  exit={{
+                    opacity: 0,
+                    transition: { duration: 0.1, ease: "easeInOut" },
                   }}
                 />
               )}
             </AnimatePresence>
+          </>
+        )}
+
+        {/**
+         * ======= DRAG-OVER OVERLAY =======
+         */}
+        <AnimatePresence>
+          {hasDragEnter && !dragInitialPosition && (
+            <Overlay
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: 0.5,
+                transition: { duration: 0.2, ease: "easeInOut" },
+              }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.1, ease: "easeInOut" },
+              }}
+            />
           )}
-          <AnimatePresence>
-            {dragInitialPosition && (
-              <Ripple
-                style={{
-                  top:
-                    dragInitialPosition.pageY -
-                    dragInitialPosition.offsetTop -
-                    dragInitialPosition.rippleDiameter / 2,
-                  left:
-                    dragInitialPosition.pageX -
-                    dragInitialPosition.offsetLeft -
-                    dragInitialPosition.rippleDiameter / 2,
-                  width: `${dragInitialPosition.rippleDiameter}px`,
-                  height: `${dragInitialPosition.rippleDiameter}px`,
-                }}
-                initial={{ opacity: 1, scale: 0 }}
-                animate={{
-                  opacity: 0.5,
-                  scale: 4,
-                  transition: { duration: 0.15, ease: "easeInOut" },
-                }}
-                exit={{
-                  opacity: 0,
-                  transition: { duration: 0.1, ease: "easeInOut" },
+        </AnimatePresence>
+
+        {/**
+         * ======= DROP ANIMATION (RIPPLE) =======
+         * This consists of 2 parts:
+         * - moving drag image to the center
+         * - rippling the from the center to fill the container
+         */}
+        {imageState.state === "replacing-ripple" && (
+          // TODO: maybe move this inside Replacement component?
+          <>
+            <motion.div
+              initial={{ display: "none" }}
+              animate={{ display: "block" }}
+              transition={{ delay: MOVE_CIRCLE_TO_CENTER_DELAY }}
+            >
+              <PhotoWithRippleInAnimation
+                imageUrl={imageState.replacementImageUrl}
+                width={width}
+                height={height}
+              />
+            </motion.div>
+            {!hasDragStart && (
+              <DragImage
+                imageUrl={imageState.replacementImageUrl}
+                animation={{
+                  type: "move-to-center",
+                  initialPosition: {
+                    top: imageState.dropY - DRAG_IMAGE_SIZE / 2,
+                    left: imageState.dropX - DRAG_IMAGE_SIZE / 2,
+                  },
                 }}
               />
             )}
-          </AnimatePresence>
-        </>
-      )}
-
-      {/**
-       * ======= DRAG-OVER OVERLAY =======
-       */}
-      <AnimatePresence>
-        {hasDragEnter && !dragInitialPosition && (
-          <Overlay
-            initial={{ opacity: 0 }}
-            animate={{
-              opacity: 0.5,
-              transition: { duration: 0.2, ease: "easeInOut" },
-            }}
-            exit={{
-              opacity: 0,
-              transition: { duration: 0.1, ease: "easeInOut" },
-            }}
-          />
+          </>
         )}
-      </AnimatePresence>
 
-      {/**
-       * ======= DROP ANIMATION (RIPPLE) =======
-       * This consists of 2 parts:
-       * - moving drag image to the center
-       * - rippling the from the center to fill the container
-       */}
-      {imageState.state === "replacing-ripple" && (
-        // TODO: maybe move this inside Replacement component?
-        <>
-          <motion.div
-            initial={{ display: "none" }}
-            animate={{ display: "block" }}
-            transition={{ delay: MOVE_CIRCLE_TO_CENTER_DELAY }}
-          >
-            <PhotoWithRippleInAnimation
-              imageUrl={imageState.replacementImageUrl}
-              width={width}
-              height={height}
+        {/**
+         * ======= FADE ANIMATION (AFTER THE IMAGE IS SWAPPED) =======
+         */}
+        {imageState.state === "replacing-fade" && (
+          <>
+            <motion.div
+              style={{
+                position: "absolute",
+                width: `${width}px`,
+                height: `${height}px`,
+                backgroundImage: `url(${imageState.replacementImageUrl})`,
+                backgroundSize: "cover",
+                backgroundRepeat: "no-repeat",
+                zIndex: 99,
+              }}
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
             />
-          </motion.div>
-          {!hasDragStart && (
+            <motion.div
+              style={{
+                background: "white",
+                position: "absolute",
+                width: `${width}px`,
+                height: `${height}px`,
+              }}
+              initial={{
+                opacity: 0,
+              }}
+              animate={{
+                opacity: 1,
+              }}
+            ></motion.div>
+          </>
+        )}
+      </Container>
+      {/**
+       * This is for initial long press animation. Had to put this outside the container
+       * so that it doesn't get cut off.
+       **/}
+      {!hasDragStart && imageState.state === "default" && (
+        <AnimatePresence>
+          {dragInitialPosition && (
             <DragImage
-              imageUrl={imageState.replacementImageUrl}
+              imageUrl={imageState.imageUrl}
               animation={{
-                type: "move-to-center",
+                type: "scale-up",
                 initialPosition: {
-                  top: imageState.dropY - DRAG_IMAGE_SIZE / 2,
-                  left: imageState.dropX - DRAG_IMAGE_SIZE / 2,
+                  top: dragInitialPosition.pageY - DRAG_IMAGE_SIZE / 2,
+                  left: dragInitialPosition.pageX - DRAG_IMAGE_SIZE / 2,
                 },
               }}
             />
           )}
-        </>
+        </AnimatePresence>
       )}
-
-      {/**
-       * ======= FADE ANIMATION (AFTER THE IMAGE IS SWAPPED) =======
-       */}
-      {imageState.state === "replacing-fade" && (
-        <>
-          <motion.div
-            style={{
-              position: "absolute",
-              width: `${width}px`,
-              height: `${height}px`,
-              backgroundImage: `url(${imageState.replacementImageUrl})`,
-              backgroundSize: "cover",
-              backgroundRepeat: "no-repeat",
-              zIndex: 99,
-            }}
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-          />
-          <motion.div
-            style={{
-              background: "white",
-              position: "absolute",
-              width: `${width}px`,
-              height: `${height}px`,
-            }}
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-          ></motion.div>
-        </>
-      )}
-    </Container>
+    </>
   );
 };
 
