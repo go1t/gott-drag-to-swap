@@ -94,21 +94,35 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
   // for data transfer's drag image
   const dragImageRef = React.useRef<HTMLDivElement>(null);
 
+  const longPressTimer = React.useRef<NodeJS.Timeout>();
+  React.useEffect(() => {
+    return () => {
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
+    };
+  }, []);
+
   // When the long press starts, save the click position and offset so that we can animate
   // the ripple effect along with the drag iomage
   const onLongPress: React.PointerEventHandler<HTMLDivElement> = (e) => {
     if (e.button !== 0 || e.pointerType !== "mouse") {
       return;
     }
+
     const element = e.currentTarget;
     const diameter = Math.max(element.clientWidth, element.clientHeight);
-    setDragInitialPosition({
+    const initialDragPosition = {
       pageX: e.pageX,
       pageY: e.pageY,
       offsetLeft: element.offsetLeft,
       offsetTop: element.offsetTop,
       rippleDiameter: diameter,
-    });
+    };
+
+    longPressTimer.current = setTimeout(() => {
+      setDragInitialPosition(initialDragPosition);
+    }, 150);
   };
 
   // On drag start, use the drag image as the image in the event's data transfer
@@ -162,7 +176,6 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
             : imageState.originalImageUrl
         }
         draggable={draggable}
-        // TODO: replace with long press handler
         onPointerDown={onLongPress}
         onDragStart={onDragStart}
         onDragEnter={(e) => {
@@ -182,7 +195,14 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
           setDragInitialPosition(undefined);
           setHasDragEnter(false);
         }}
-        onPointerUp={() => setDragInitialPosition(undefined)}
+        onPointerUp={(e) => {
+          e.preventDefault();
+          if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+          }
+          longPressTimer.current = undefined;
+          setDragInitialPosition(undefined);
+        }}
       >
         {/**
          * ======= DRAG-START ANIMATION =======
