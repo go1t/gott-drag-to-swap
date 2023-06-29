@@ -1,7 +1,8 @@
 ## Known issues/improvements
 
-- [ ] Replace onMouseDown handler with a long-press handler
-- [ ] Mobile animation is still very janky
+- [ ] Fix mobile jankiness
+  - e.g. stop using setDragImage and browser's dragging behavior and move the drag previews manually
+  - maybe use a different drag and drop library like dnd-kit?
 - [ ] Replace the droppable cursor
 - [ ] Split out more components from `DraggablePhoto` component
 - [ ] General style improvement (e.g. overlay opacity, animation timings)
