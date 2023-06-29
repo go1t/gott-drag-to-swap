@@ -53,7 +53,7 @@ In this state, no animation will be played until the image is dragged.
 When the drag starts, there are two parts at play:
 
 - Long-press handler (shown here as mouse down for now)
-  - The drag image shows up at the spot of the click with a scale-up animation
+  - The drag image shows up at the spot of the click with a bounce-in animation
   - The white ripple animation is played from the spot of the click
 - Drag-start handler
   - The drag image is added to the event's [DataTransfer](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer)'s drag image via `setDragImage` API

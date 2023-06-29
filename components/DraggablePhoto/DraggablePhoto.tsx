@@ -330,7 +330,7 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
             <DragImage
               imageUrl={imageState.imageUrl}
               animation={{
-                type: "scale-up",
+                type: "bounce-in",
                 initialPosition: {
                   top: dragInitialPosition.pageY - DRAG_IMAGE_SIZE / 2,
                   left: dragInitialPosition.pageX - DRAG_IMAGE_SIZE / 2,

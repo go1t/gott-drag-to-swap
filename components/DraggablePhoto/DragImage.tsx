@@ -27,7 +27,7 @@ const DragImageBase = styled(motion.div)<{
 interface DragImageProps {
   imageUrl: string;
   animation?: {
-    type: "scale-up" | "move-to-center";
+    type: "bounce-in" | "move-to-center";
     initialPosition: {
       top: number;
       left: number;
@@ -46,7 +46,7 @@ const DragImage = React.forwardRef<HTMLDivElement, DragImageProps>(
     }
 
     switch (animation.type) {
-      case "scale-up":
+      case "bounce-in":
         return (
           <DragImageBase
             ref={ref}
@@ -56,7 +56,7 @@ const DragImage = React.forwardRef<HTMLDivElement, DragImageProps>(
             style={{ position: "absolute" }}
             initial={{ scale: 0 }}
             animate={{
-              scale: 1,
+              scale: [0, 1.2, 1],
             }}
             exit={{
               scale: 0,
