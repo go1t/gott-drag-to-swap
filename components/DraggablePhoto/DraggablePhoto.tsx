@@ -162,7 +162,7 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
       }
       draggable={draggable}
       // TODO: replace with long press handler
-      onMouseDown={onLongPress}
+      onPointerDown={onLongPress}
       onDragStart={onDragStart}
       onDragEnter={(e) => {
         e.preventDefault();
