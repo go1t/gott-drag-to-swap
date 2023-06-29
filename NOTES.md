@@ -1,6 +1,7 @@
 ## Known issues/improvements
 
 - [ ] Replace onMouseDown handler with a long-press handler
+- [ ] Mobile animation is still very janky
 - [ ] Replace the droppable cursor
 - [ ] Split out more components from `DraggablePhoto` component
 - [ ] General style improvement (e.g. overlay opacity, animation timings)

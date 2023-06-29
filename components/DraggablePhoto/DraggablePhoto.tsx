@@ -96,8 +96,8 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
 
   // When the long press starts, save the click position and offset so that we can animate
   // the ripple effect along with the drag iomage
-  const onLongPress: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (e.button !== 0) {
+  const onLongPress: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (e.button !== 0 || e.pointerType !== "mouse") {
       return;
     }
     const element = e.currentTarget;
@@ -182,7 +182,7 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
           setDragInitialPosition(undefined);
           setHasDragEnter(false);
         }}
-        onMouseUp={() => setDragInitialPosition(undefined)}
+        onPointerUp={() => setDragInitialPosition(undefined)}
       >
         {/**
          * ======= DRAG-START ANIMATION =======
