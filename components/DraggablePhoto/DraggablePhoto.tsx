@@ -132,6 +132,7 @@ const DraggablePhoto: React.FC<SwappablePhotoProps> = ({
   // On drop, we will grab the image url from the event and call the onDrop
   // callback so the parent component can start replacing the state
   const onImageDrop: React.DragEventHandler<HTMLDivElement> = (e) => {
+    e.preventDefault();
     if (!e.dataTransfer || imageState.state !== "default") return;
     setHasDragEnter(false);
     const newReplacement = e.dataTransfer.getData("text");
